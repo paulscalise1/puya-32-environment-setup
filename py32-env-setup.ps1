@@ -82,7 +82,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
             if ($architecture -eq "x86"){
                 $verboseOutput = curl.exe -v -d "accept_license_agreement=accepted&submit=Download+software" https://www.segger.com/downloads/jlink/JLink_Windows_x86_64.exe -o $x86programPath 2>&1
 	    } elseif ($architecture -eq "ARM"){
-                $verboseOutput = curl.exe -v -d "accept_license_agreement=accepted&submit=Download+software" https://www.segger.com/downloads/jlink/JLink_Windows_arm64.exe -o $x86programPath 2>&1
+                $verboseOutput = curl.exe -v -d "accept_license_agreement=accepted&submit=Download+software" https://www.segger.com/downloads/jlink/JLink_Windows_arm64.exe -o $arm64programPath 2>&1
             }
 
 	    # Extract the HTTP status code from the verbose output
