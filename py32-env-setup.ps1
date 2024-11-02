@@ -11,6 +11,7 @@ $arm64_JLink = "JLink_Windows_arm64.exe"
 $arm64programPath = -join($segger_DL_Path, $arm86_JLink)
 
 $architecture = (Get-CimInstance -ClassName Win32_OperatingSystem).OSArchitecture
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
 
 if ($architecture -match "64") {
     $architecture = "x86"
@@ -72,65 +73,26 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
             choco install gcc-arm-embedded -y
         }
 
-        # Check if VSCode is installed
-        if (Get-Command code -ErrorAction SilentlyContinue) {
-            Write-Host "Visual Studio Code is installed. Version: $(code --version)"
-        } else {
-            Write-Host "Visual Studio Code is not installed."
-            Write-Host "Installing Visual Studio Code.."
-            choco install vscode -y
-
-            $vscodePath = "C:\Program Files\Microsoft VS Code\bin"
-            if (-Not ($env:PATH -like "*$vscodePath*")) {
-                $env:PATH += ";$vscodePath"
-            }
-
-            # Check if VSCode is installed correctly and available in the current session
-            if (Get-Command code -ErrorAction SilentlyContinue) {
-                Write-Host "Visual Studio Code installed successfully. Version: $(code --version)"
-            } else {
-                Write-Host "Visual Studio Code installation failed or PATH is not set correctly."
-            }
-
-            # Check if VSCode is installed correctly and available in the current session
-            if (Get-Command code -ErrorAction SilentlyContinue) {
-                Write-Host "Visual Studio Code installed successfully. Version: $(code --version)"
-            } else {
-                Write-Host "Visual Studio Code installation failed or PATH is not set correctly."
-                exit 1
-            }
-        }
-
-        # Check if the Cortex-Debug extension is installed
-        $installedExtensions = code --list-extensions
-        if ($installedExtensions -like "*marus25.cortex-debug*") {
-            Write-Host "Cortex-Debug extension is already installed."
-        } else {
-            Write-Host "Cortex-Debug extension is not installed. Installing now..."
-
-            # Install the Cortex-Debug extension in VSCode
-            code --install-extension marus25.cortex-debug
-
-            # Verify the installation
-            $installedExtensions = code --list-extensions
-            if ($installedExtensions -like "*marus25.cortex-debug*") {
-                Write-Host "Cortex-Debug extension installed successfully."
-            } else {
-                Write-Host "Failed to install the Cortex-Debug extension."
-            }
-        }
 
         # Check to see if Jlink V8+ is installed
         if (!(Test-Path "C:\Program Files\SEGGER\V8*")){
             # Download the updated SEGGER JLink software
             New-Item -Path $segger_DL_Path -ItemType Directory -ErrorAction SilentlyContinue
-            Write-Host "Downloading Latest SEGGER JLink Tools..."
+            Write-Host "Downloading Latest SEGGER JLink Tools. This may take a minute..."
             if ($architecture -eq "x86"){
-                $statusCode = (curl.exe -d 'accept_license_agreement=accepted&submit=Download+software' https://www.segger.com/downloads/jlink/JLink_Windows_x86_64.exe --output $x86programPath --write-out "%{http_code}")
-            } elseif ($architecture -eq "ARM"){
-                $statusCode = (curl.exe -d 'accept_license_agreement=accepted&submit=Download+software' https://www.segger.com/downloads/jlink/JLink_Windows_arm64.exe --output $arm64programPath --write-out "%{http_code}")
+                $verboseOutput = curl.exe -v -d "accept_license_agreement=accepted&submit=Download+software" https://www.segger.com/downloads/jlink/JLink_Windows_x86_64.exe -o $x86programPath 2>&1
+	    } elseif ($architecture -eq "ARM"){
+                $verboseOutput = curl.exe -v -d "accept_license_agreement=accepted&submit=Download+software" https://www.segger.com/downloads/jlink/JLink_Windows_arm64.exe -o $x86programPath 2>&1
             }
-            if ($statusCode -eq "200") {
+
+	    # Extract the HTTP status code from the verbose output
+	    $httpCode = $verboseOutput | Select-String -Pattern "HTTP/.*" | ForEach-Object { 
+   	    	if ($_ -match 'HTTP/.* (\d{3}) OK') { 
+        		$matches[1] 
+    	    	}
+	    } | Select-Object -First 1
+	    
+            if ($httpCode -eq "200") {
                 Write-Host "JLink Software Download successful (HTTP Status Code: $statusCode)"
                 Write-Host "Opening JLink Installer..."
                 Write-Host "Script will continue after the installation of JLink Software is complete... Continue with the install wizard."
@@ -166,7 +128,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
                 # Add PY32 family folder
                 New-Item -Path $fullPuyaPath -ItemType Directory
             } else {
-                Host-Write "\JLinkDevices\Puya\PY32 already exists"
+               
             }
         }
 
@@ -176,33 +138,19 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
         # Copy the flash algorithm files and JLinkDevices.xml to the PY32 folder.
         Copy-Item -Path "$sourceDirectory\*" -Destination $fullPuyaPath -Recurse -Force
 
-        # Define the SEGGER base directory
-        $baseDirectory = "C:\Program Files\SEGGER"
+	# Get the path to the recently added SEGGER exe's
+        $latestSeggerVersionPath = (Get-ChildItem "C:\Program Files\SEGGER" -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
 
-        # Get all subdirectories with version numbers
-        $versionDirectories = Get-ChildItem -Path $baseDirectory -Directory | Where-Object { $_.Name -match '^\d+(\.\d+)*$' }
+        $pathExists = $env:Path -split ';' | Where-Object { $_ -eq $latestSeggerVersionPath }
 
-        # Parse and find the directory with the highest version number
-        $highestVersionDirectory = $versionDirectories | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
-
-        if ($highestVersionDirectory) {
-            # Output the path of the highest version directory
-            $highestVersionPath = $highestVersionDirectory.FullName
-            Write-Host "The highest version directory is: $highestVersionPath"
-
-            # Check if the path is already in the system PATH
-            $currentPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
-    
-            if ($currentPath -notlike "*$highestVersionPath*") {
-                # Add the path if it's not already present
-                [System.Environment]::SetEnvironmentVariable("Path", $currentPath + ";$highestVersionPath", [System.EnvironmentVariableTarget]::Machine)
-                Write-Host "Path updated with the highest version directory."
-            } else {
-                Write-Host "The path is already in the PATH environment variable."
-            }
-        } else {
-            Write-Host "No version directories found in $baseDirectory."
-        }
+	if ($pathExists) {
+    		"SEGGER Binaries already exist in the PATH. No action necessary."
+	} else {
+    		[Environment]::SetEnvironmentVariable("Path", $env:Path + $latestSeggerVersionPath, [EnvironmentVariableTarget]::Machine)
+		Write-Host "Added $atestSeggerVersionPath to the System PATH."
+	}
+	
+	Write-Host "`nIf there are no errors setup is complete. Open (or restart if already open) vscode.`n"
 
     } else {
         Write-Host "Please accept the SEGGER License to download the software. Add --AcceptSEGGERLicense in the command line."
