@@ -3,7 +3,7 @@
 A PowerShell-based setup script for configuring a development environment targeting Puya PY32 series microcontrollers (ARM Cortex‑M0).
 
     Features
-	•	Automated setup for GNU Arm Embedded Toolchain, CMake, JLink
+	•	Automated setup for GNU Arm Embedded Toolchain, CMake, JLink Device Details
 	•	Scripts to configure VS Code devcontainer or local setup
 	•	Enables building, flashing, and debugging toolchains for PY32 projects
 
