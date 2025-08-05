@@ -22,5 +22,5 @@ cd puya-32-environment-setup
 
 Run the setup script as administrator in Powershell:
 ```bash
-sudo .\py32-env-setup.ps1
+.\py32-env-setup.ps1
 ```
