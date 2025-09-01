@@ -2,15 +2,12 @@
 
 A PowerShell-based setup script for configuring a development environment targeting Puya PY32 series microcontrollers (ARM Cortex‑M0).
 
-    Features
-	•	Automated setup for GNU Arm Embedded Toolchain, CMake, JLink Device Details
-	•	Scripts to configure VS Code devcontainer or local setup
-	•	Enables building, flashing, and debugging toolchains for PY32 projects
-
-    Prerequisites
-	•	Windows (PowerShell)
-	•	Puya PY32 dev board (e.g. PY32F002A)
-	•	SWD debug probe (DAPLink / J-Link)
+What this script does:
+- Installs (or verifies) Chocolatey package manager
+- Installs make, curl, and ARM GCC (arm-none-eabi-gcc)
+- Downloads and runs the SEGGER J-Link installer (auto-detects x86_64 vs ARM64)
+- Creates JLinkDevices\Puya\PY32 in your roaming profile and copies files there
+- Adds the newest "C:\Program Files\SEGGER\JLink_*" folder to the System PATH
 
 ## Installation
 
@@ -20,6 +17,8 @@ git clone https://github.com/paulscalise1/puya-32-environment-setup.git
 cd puya-32-environment-setup
 ```
 
+## Usage
+
 Run the setup script as administrator in Powershell:
 ```bash
 .\py32-env-setup.ps1 --AcceptSEGGERLicense
@@ -28,3 +27,4 @@ If your system does not allow scripts to run, bypass the protection by running t
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\py32-env-setup.ps1" --AcceptSEGGERLicense
 ```
+Once finished, restart your terminal sessions for the new system PATH to be recognized.
