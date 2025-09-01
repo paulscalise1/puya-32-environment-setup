@@ -6,7 +6,7 @@ What this script does:
 - Installs (or verifies) Chocolatey package manager
 - Installs make, curl, and ARM GCC (arm-none-eabi-gcc)
 - Downloads and runs the SEGGER J-Link installer (auto-detects x86_64 vs ARM64)
-- Creates JLinkDevices\Puya\PY32 in your roaming profile and copies files there
+- Creates JLinkDevices\Puya\PY32 in your roaming profile and copies device configuration files there
 - Adds the newest "C:\Program Files\SEGGER\JLink_*" folder to the System PATH
 
 ## Installation
