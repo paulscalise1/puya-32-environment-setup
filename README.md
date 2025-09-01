@@ -22,5 +22,9 @@ cd puya-32-environment-setup
 
 Run the setup script as administrator in Powershell:
 ```bash
-.\py32-env-setup.ps1
+.\py32-env-setup.ps1 --AcceptSEGGERLicense
+```
+If your system does not allow scripts to run, bypass the protection by running the script with:
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\py32-env-setup.ps1" --AcceptSEGGERLicense
 ```
