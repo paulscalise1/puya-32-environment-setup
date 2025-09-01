@@ -20,7 +20,7 @@ cd puya-32-environment-setup
 ## Usage
 
 Prior to running the script, adjust the parameters in ```./PY32/Devices.xml``` to suit your working PUYA32 target.
-By default, ```./PY32/Devices.xml``` is loaded with values for the ```py32f030x8```.
+By default, ```./PY32/Devices.xml``` is loaded with values for the ```py32f030x8```. This allows for the JLINK to recognize the target.
 
 Run the setup script as administrator in Powershell:
 ```bash
